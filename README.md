@@ -4,55 +4,51 @@
 
 ## React Client Application Routes
 
-- Route `/setup`: for registered user: network map with all stations, their connections, and the lines, planning button, log out button, for visitor: only game instructions
-- Route `/login`: user id and password input,verify selection area(prevent bulk registeration),login button, register link.
-- Route `/register`: last_name,first_name,id,password,confirm_password input,register button.
-- Route `/ranking`: previous finished execution grades/rank,return button.
-- Route `/planning`: network map(only the stations with their names),a starting station and a destination station,the list of all segments, timeout area(realtime rendering),execution button.
-- Route `/execution`: shows the steps one at a time, in sequence, displaying the unexpected event that occurred and the updated coin total.
-- Route `/result`: final score and restart button.
+- Route `/`: public instructions page. Anonymous visitors can only read the game instructions; logged-in users can move to the setup page.
+- Route `/login`: login form with username and password fields.
+- Route `/setup`: protected page showing the full underground network map with stations, segments, and lines; includes controls to start a new game, open the ranking, and log out.
+- Route `/games/:gameId/planning`: protected planning page showing the stations-only map, assigned start and destination stations, the list of available segments, the selected route, and the 90-second countdown.
+- Route `/games/:gameId/execution`: protected page showing the submitted route execution one segment at a time, with the random event and updated coin total for each step.
+- Route `/games/:gameId/result`: protected page showing the final score and a control to start another game.
+- Route `/ranking`: protected page showing the best score obtained by each registered user.
 - ...
 
 ## API Server
 
-- POST `/api/login`
-  - id,password
-  - 1/error message,0/success
-- POST `/api/logout`
-  - id
-  - 1/error message,0/success
-- GET `/api/lines`
-  - user_session
-  - line_list
-- GET `/api/stations`
-  - user_session
-  - station_list
-- GET `/api/random_station`
-  - user_session
-  - start_station,end_station
-- GET `/api/segments`
-  - user_session
-  - segment_list
-- GET `/api/events`
-  - user_session
-  - event_list
-- GET `api/ranking`
-  - user_session
-  - event_list
-- POST `api/execute`
-  - segment_list and user_session
-  - 0/start_station,end_station,event_id,coins,1/error message(invalid or incomplete),is_final
+- POST `/api/sessions`
+  - Request body: `{ username, password }`.
+  - Response: authenticated user object. Creates a Passport session cookie.
+- GET `/api/sessions/current`
+  - Request body: none.
+  - Response: current authenticated user, or `401` if not logged in.
+- DELETE `/api/sessions/current`
+  - Request body: none.
+  - Response: empty response after logout.
+- GET `/api/network`
+  - Request body: none. Protected endpoint.
+  - Response: full network data for the setup page: stations, lines, and segments.
+- POST `/api/games`
+  - Request body: none. Protected endpoint.
+  - Response: a new game with `gameId`, randomly assigned `startStation`, `destinationStation`, planning deadline, stations, and selectable segments. The destination is at least 3 segments away from the start.
+- POST `/api/games/:gameId/submit`
+  - Request body: `{ route: [{ segmentId, fromStationId, toStationId }] }`. Protected endpoint.
+  - Response: route validity, execution steps with random events and coin totals, and final score. Invalid or incomplete routes return score `0`.
+- GET `/api/games/:gameId/result`
+  - Request body: none. Protected endpoint.
+  - Response: final result of one game owned by the logged-in user.
+- GET `/api/ranking`
+  - Request body: none. Protected endpoint.
+  - Response: users ordered by their best score.
 - ...
 
 ## Database Tables
 
-- Table `user` - contains id,username,salt,hash_password
-- Table `station` - contains is_interchange,name,id,x,y
-- Table `line` - contains name,id
-- Table `segment` - contains line_id,station_a_id,station_b_id
-- Table `games` - contains id,user_id,start_station_id,destination_station_id,score,play_at
-- Table `event` - contains id,description,effect
-- Table `static_data` - contains init_coins,select_time_out //if support configuration
+- Table `users` - contains id, username, name, salt, password_hash.
+- Table `stations` - contains id, name, is_interchange, x, y.
+- Table `lines` - contains id, name.
+- Table `segments` - contains id, line_id, station_a_id, station_b_id.
+- Table `events` - contains id, description, effect.
+- Table `games` - contains id, user_id, start_station_id, destination_station_id, score, play_at.
 - ...
 
 ## Main React Components
