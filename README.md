@@ -15,9 +15,6 @@
 
 ## API Server
 
-- POST `/api/register`
-  - last_name,first_name,password,id
-  - 1/error message,0/success and user_session
 - POST `/api/login`
   - id,password
   - 1/error message,0/success
@@ -49,12 +46,13 @@
 
 ## Database Tables
 
-- Table `user` - contains id,last_name,first_name,password,encrpyted_token,score
-- Table `station` - contains is_interchange,name,id
-- Table `line` - contains station_list,name,id
-- Table `network` - contains line_list,id
-- Table `event` - contains description,effect
-- Table `static_data` - contains init_coins,select_time_out
+- Table `user` - contains id,username,salt,hash_password
+- Table `station` - contains is_interchange,name,id,x,y
+- Table `line` - contains name,id
+- Table `segment` - contains line_id,station_a_id,station_b_id
+- Table `games` - contains id,user_id,start_station_id,destination_station_id,score,play_at
+- Table `event` - contains id,description,effect
+- Table `static_data` - contains init_coins,select_time_out //if support configuration
 - ...
 
 ## Main React Components
