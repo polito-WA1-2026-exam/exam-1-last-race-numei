@@ -1,29 +1,60 @@
 # Exam #N: "Exam Title"
-## Student: s123456 LASTNAME FIRSTNAME 
+
+## Student: s353434 Jinghao Mei
 
 ## React Client Application Routes
 
-- Route `/`: page content and purpose
-- Route `/something/:param`: page content and purpose, param specification
+- Route `/setup`: for registered user: network map with all stations, their connections, and the lines, planning button, log out button, for visitor: only game instructions
+- Route `/login`: user id and password input,verify selection area(prevent bulk registeration),login button, register link.
+- Route `/register`: last_name,first_name,id,password,confirm_password input,register button.
+- Route `/ranking`: previous finished execution grades/rank,return button.
+- Route `/planning`: network map(only the stations with their names),a starting station and a destination station,the list of all segments, timeout area(realtime rendering),execution button.
+- Route `/execution`: shows the steps one at a time, in sequence, displaying the unexpected event that occurred and the updated coin total.
+- Route `/result`: final score and restart button.
 - ...
 
 ## API Server
 
-- POST `/api/something`
-  - request parameters and request body content
-  - response body content
-- GET `/api/something`
-  - request parameters
-  - response body content
-- POST `/api/something`
-  - request parameters and request body content
-  - response body content
+- POST `/api/register`
+  - last_name,first_name,password,id
+  - 1/error message,0/success and user_session
+- POST `/api/login`
+  - id,password
+  - 1/error message,0/success
+- POST `/api/logout`
+  - id
+  - 1/error message,0/success
+- GET `/api/lines`
+  - user_session
+  - line_list
+- GET `/api/stations`
+  - user_session
+  - station_list
+- GET `/api/random_station`
+  - user_session
+  - start_station,end_station
+- GET `/api/segments`
+  - user_session
+  - segment_list
+- GET `/api/events`
+  - user_session
+  - event_list
+- GET `api/ranking`
+  - user_session
+  - event_list
+- POST `api/execute`
+  - segment_list and user_session
+  - 0/start_station,end_station,event_id,coins,1/error message(invalid or incomplete),is_final
 - ...
 
 ## Database Tables
 
-- Table `users` - contains xx yy zz
-- Table `something` - contains ww qq ss
+- Table `user` - contains id,last_name,first_name,password,encrpyted_token,score
+- Table `station` - contains is_interchange,name,id
+- Table `line` - contains station_list,name,id
+- Table `network` - contains line_list,id
+- Table `event` - contains description,effect
+- Table `static_data` - contains init_coins,select_time_out
 - ...
 
 ## Main React Components
@@ -44,5 +75,6 @@
 - username, password (plus any other requested info)
 
 ## Use of AI Tools
+
 Briefly describe whether you used any AI tools (e.g., ChatGPT, GitHub Copilot, Claude) while working on this project, for which purposes (e.g., clarifying concepts, debugging, generating code), and how you verified or adapted their output.
 If you did not use any AI tools, simply state so.
