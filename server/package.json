@@ -7,9 +7,11 @@
   "type": "module",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "init-db": "node init-db.js",
+    "test": "node --test database.test.js"
   },
   "dependencies": {
-    "express": "^5.2.1"
+    "express": "^5.2.1",
+    "sqlite3": "^6.0.1"
   }
 }
