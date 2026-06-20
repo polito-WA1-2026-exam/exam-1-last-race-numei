@@ -1,12 +1,1 @@
-import { createContext, useContext } from 'react'
-
-export const AuthContext = createContext({
-  user: undefined,
-  checkingSession: true,
-  login: async () => {},
-  logout: async () => {},
-})
-
-export function useAuth() {
-  return useContext(AuthContext)
-}
+export { AuthContext, useAuth } from './page/hooks/useAuth.js'
