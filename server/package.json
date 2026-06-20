@@ -8,10 +8,16 @@
   "main": "index.js",
   "scripts": {
     "init-db": "node init-db.js",
-    "test": "node --test database.test.js"
+    "test": "node --test database.test.js api.test.js"
   },
   "dependencies": {
+    "cors": "^2.8.6",
     "express": "^5.2.1",
+    "express-session": "^1.19.0",
+    "express-validator": "^7.3.1",
+    "morgan": "^1.10.1",
+    "passport": "^0.7.0",
+    "passport-local": "^1.0.0",
     "sqlite3": "^6.0.1"
   }
 }
