@@ -1,1 +1,1 @@
-export { AuthContext, useAuth } from './page/hooks/useAuth.js'
+export { AuthContext, useAuth } from './pages/hooks/useAuth.js'

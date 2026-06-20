@@ -2,7 +2,7 @@ import { Navigate } from "react-router";
 import { Alert, Box, Button, CircularProgress, TextField } from "@mui/material";
 import LoginOutlinedIcon from "@mui/icons-material/LoginOutlined";
 import { PagePanel } from "./components/PagePanel.jsx";
-import { useAuth } from "../hooks/useAuth.js";
+import { useAuth } from "./hooks/useAuth.js";
 import { useLoginForm } from "./hooks/useLoginForm.js";
 
 export function LoginPage() {
@@ -14,18 +14,14 @@ export function LoginPage() {
 
   return (
     <PagePanel
-      icon={<LoginOutlinedIcon />}
-      subtitle="Use one of the seeded exam accounts to enter the protected game routes."
+      // icon={<LoginOutlinedIcon />}
+      subtitle="Registered users can play games and appear in the ranking. Anonymous visitors can only read the instructions."
       title="Login"
     >
       <Box
         component="form"
         onSubmit={handleSubmit}
-        sx={{
-          display: "grid",
-          gap: 2,
-          maxWidth: 420,
-        }}
+        sx={{ display: "grid", gap: 2, maxWidth: 420 }}
       >
         <TextField
           autoComplete="username"

@@ -1,1 +1,1 @@
-export { SessionApi as API } from './page/api/sessionApi.js'
+export { SessionApi as API } from './pages/api/sessionApi.js'

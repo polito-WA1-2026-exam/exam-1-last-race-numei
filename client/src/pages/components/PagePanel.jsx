@@ -8,7 +8,7 @@ export function PagePanel({ action, children, icon, subtitle, title }) {
         border: 1,
         borderColor: 'divider',
         borderRadius: 3,
-        maxWidth: 860,
+        maxWidth: 1100,
         mx: 'auto',
         overflow: 'hidden',
       }}
@@ -38,7 +38,7 @@ export function PagePanel({ action, children, icon, subtitle, title }) {
                 {title}
               </Typography>
               {subtitle && (
-                <Typography color="text.secondary" sx={{ mt: 1, maxWidth: 680 }}>
+                <Typography color="text.secondary" sx={{ mt: 1, maxWidth: 760 }}>
                   {subtitle}
                 </Typography>
               )}

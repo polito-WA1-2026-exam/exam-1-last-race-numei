@@ -1,0 +1,22 @@
+const API_URL = 'http://localhost:3001/api'
+
+export async function request(path, options = {}) {
+  const response = await fetch(`${API_URL}${path}`, {
+    credentials: 'include',
+    headers: {
+      'Content-Type': 'application/json',
+      ...options.headers,
+    },
+    ...options,
+  })
+
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({ error: 'Request failed' }))
+    const validationMessage = error.errors?.map((item) => item.msg).join(', ')
+    throw new Error(error.error ?? validationMessage ?? 'Request failed')
+  }
+
+  if (response.status === 204) return undefined
+  const text = await response.text()
+  return text ? JSON.parse(text) : undefined
+}

@@ -8,7 +8,8 @@
   "main": "index.js",
   "scripts": {
     "init-db": "node init-db.js",
-    "test": "node --test database.test.js api.test.js"
+    "test": "node --test database.test.js api.test.js",
+    "dev": "nodemon index.js"
   },
   "dependencies": {
     "cors": "^2.8.6",
