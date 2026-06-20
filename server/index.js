@@ -138,6 +138,9 @@ const toPlanningPayload = (network) => ({
 const getSegmentMap = (network) =>
   new Map(network.segments.map((segment) => [segment.id, segment]));
 
+const getStationMap = (network) =>
+  new Map(network.stations.map((station) => [station.id, station]));
+
 const routeStepMatchesSegment = (step, segment) => {
   const forward =
     step.fromStationId === segment.stationAId &&
@@ -154,8 +157,10 @@ const validateRoute = (route, game, network) => {
   }
 
   const segmentMap = getSegmentMap(network);
+  const stationMap = getStationMap(network);
   const usedSegments = new Set();
   let currentStationId = game.startStation.id;
+  let previousSegment;
 
   for (const step of route) {
     const segment = segmentMap.get(step.segmentId);
@@ -170,8 +175,19 @@ const validateRoute = (route, game, network) => {
         valid: false,
         reason: "A selected segment does not connect the selected stations.",
       };
+    if (
+      previousSegment &&
+      previousSegment.lineId !== segment.lineId &&
+      !stationMap.get(currentStationId)?.isInterchange
+    ) {
+      return {
+        valid: false,
+        reason: "Line changes are allowed only at interchange stations.",
+      };
+    }
 
     usedSegments.add(step.segmentId);
+    previousSegment = segment;
     currentStationId = step.toStationId;
   }
 
@@ -182,7 +198,6 @@ const validateRoute = (route, game, network) => {
     };
   }
 
-  // TODO: enforce the full line-change rule: line changes must be allowed only at interchange stations.
   return { valid: true };
 };
 

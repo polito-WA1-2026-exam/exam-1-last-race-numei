@@ -18,6 +18,7 @@ import { SegmentPicker } from './components/SegmentPicker.jsx'
 import { StatusPanel } from './components/StatusPanel.jsx'
 import { useCountdown } from './hooks/useCountdown.js'
 import { useGame } from './hooks/useGame.js'
+import { shuffleStationPositions } from './stationLayout.js'
 import { debounce } from './util.js'
 
 export function PlanningPage() {
@@ -29,14 +30,12 @@ export function PlanningPage() {
   const {
     clearRoute,
     currentGame,
-    currentStationId,
     gameStatus,
     removeLastSegment,
     restoreGame,
     routeError,
     routeSteps,
     selectSegment,
-    stationById,
     submitRoute,
     submittedResult,
     usedSegmentIds,
@@ -45,6 +44,13 @@ export function PlanningPage() {
   const planningProgress = currentGame
     ? (remainingSeconds / currentGame.planningSeconds) * 100
     : 0
+  const shuffledStations = useMemo(
+    () =>
+      currentGame
+        ? shuffleStationPositions(currentGame.stations, currentGame.gameId)
+        : [],
+    [currentGame],
+  )
 
   useEffect(() => {
     if (!currentGame && location.state?.game) {
@@ -96,8 +102,6 @@ export function PlanningPage() {
     )
   }
 
-  const currentStation = stationById.get(currentStationId)
-
   return (
     <PagePanel
       action={
@@ -118,7 +122,7 @@ export function PlanningPage() {
         </Button>
       }
       icon={<TimerOutlinedIcon />}
-      subtitle="The map only shows station names. Build a route by selecting connected segment pairs in sequence."
+      subtitle="The map only shows station names. Build a route by selecting segment pairs in sequence."
       title="Planning"
     >
       <StatusPanel error={gameStatus.error} loading={gameStatus.loading && !submitting} />
@@ -147,15 +151,13 @@ export function PlanningPage() {
           }}
         >
           <NetworkMap
-            currentStationId={currentStationId}
             destinationStationId={currentGame.destinationStation.id}
             selectedRoute={routeSteps}
             showSegments={false}
             startStationId={currentGame.startStation.id}
-            stations={currentGame.stations}
+            stations={shuffledStations}
           />
           <RouteSummary
-            currentStation={currentStation}
             destinationStation={currentGame.destinationStation}
             onClear={clearRoute}
             onRemoveLast={removeLastSegment}

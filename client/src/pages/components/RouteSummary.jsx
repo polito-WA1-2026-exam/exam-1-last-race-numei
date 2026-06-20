@@ -4,21 +4,18 @@ import DeleteSweepOutlinedIcon from '@mui/icons-material/DeleteSweepOutlined'
 
 export function RouteSummary({
   canEdit = true,
-  currentStation,
   destinationStation,
   onClear,
   onRemoveLast,
   routeSteps = [],
   startStation,
 }) {
-  const reachedDestination = currentStation?.id === destinationStation?.id
-
   return (
     <Stack spacing={2}>
       <Box>
         <Typography variant="h6">Selected route</Typography>
         <Typography color="text.secondary" variant="body2">
-          Start at {startStation?.name}; current station is {currentStation?.name}.
+          Start at {startStation?.name}.
         </Typography>
       </Box>
 
@@ -48,10 +45,7 @@ export function RouteSummary({
       )}
 
       <Stack direction="row" spacing={1} sx={{ flexWrap: 'wrap', gap: 1 }}>
-        <Chip
-          color={reachedDestination ? 'success' : 'default'}
-          label={reachedDestination ? 'Destination reached' : `Destination: ${destinationStation?.name}`}
-        />
+        <Chip label={`Destination: ${destinationStation?.name}`} />
         <Chip label={`${routeSteps.length} segment${routeSteps.length === 1 ? '' : 's'}`} />
       </Stack>
 

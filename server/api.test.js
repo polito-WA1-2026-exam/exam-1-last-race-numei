@@ -56,3 +56,37 @@ test("basic route validation checks endpoints, continuity, known segments, and d
   assert.equal(apiInternals.validateRoute([{ segmentId: 999, fromStationId: 1, toStationId: 2 }], game, network).valid, false);
   assert.equal(apiInternals.validateRoute([validRoute[0], validRoute[0]], game, network).valid, false);
 });
+
+test("route validation allows line changes only at interchange stations", async () => {
+  execFileSync("node", ["init-db.js"], { cwd: import.meta.dirname });
+  const network = await getNetwork();
+
+  const interchangeChangeGame = {
+    startStation: { id: 1 },
+    destinationStation: { id: 5 },
+  };
+  const interchangeChangeRoute = [
+    { segmentId: 1, fromStationId: 1, toStationId: 2 },
+    { segmentId: 8, fromStationId: 2, toStationId: 5 },
+  ];
+  assert.deepEqual(
+    apiInternals.validateRoute(interchangeChangeRoute, interchangeChangeGame, network),
+    { valid: true },
+  );
+
+  const nonInterchangeChangeGame = {
+    startStation: { id: 4 },
+    destinationStation: { id: 6 },
+  };
+  const nonInterchangeChangeRoute = [
+    { segmentId: 11, fromStationId: 4, toStationId: 7 },
+    { segmentId: 7, fromStationId: 7, toStationId: 6 },
+  ];
+  assert.deepEqual(
+    apiInternals.validateRoute(nonInterchangeChangeRoute, nonInterchangeChangeGame, network),
+    {
+      valid: false,
+      reason: "Line changes are allowed only at interchange stations.",
+    },
+  );
+});
