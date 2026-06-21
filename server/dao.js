@@ -60,7 +60,7 @@ export const getUser = (username, password) =>
 
 export const getNetwork = async () => {
   const stations = await all(
-    `SELECT id, name, is_interchange AS isInterchange, x, y
+    `SELECT id, name, is_interchange AS isInterchange
      FROM stations
      ORDER BY id`,
   );

@@ -80,16 +80,28 @@ test("route validation allows line changes only at interchange stations", async 
     },
   );
 
-  const nonInterchangeChangeGame = {
-    startStation: { id: 4 },
-    destinationStation: { id: 6 },
+  const nonInterchangeNetwork = {
+    stations: [
+      { id: 1, isInterchange: false },
+      { id: 2, isInterchange: false },
+      { id: 3, isInterchange: false },
+    ],
+    segments: [
+      { id: 1, lineId: 1, stationAId: 1, stationBId: 2 },
+      { id: 2, lineId: 2, stationAId: 2, stationBId: 3 },
+    ],
   };
-  const nonInterchangeChangeRoute = [
-    { segmentId: 11, fromStationId: 4, toStationId: 7 },
-    { segmentId: 7, fromStationId: 7, toStationId: 6 },
-  ];
+  const nonInterchangeChangeGame = {
+    startStation: { id: 1 },
+    destinationStation: { id: 3 },
+  };
+  const nonInterchangeChangeRoute = [{ segmentId: 1 }, { segmentId: 2 }];
   assert.deepEqual(
-    apiInternals.validateRoute(nonInterchangeChangeRoute, nonInterchangeChangeGame, network),
+    apiInternals.validateRoute(
+      nonInterchangeChangeRoute,
+      nonInterchangeChangeGame,
+      nonInterchangeNetwork,
+    ),
     {
       valid: false,
       reason: "Line changes are allowed only at interchange stations.",
@@ -131,11 +143,38 @@ test("route validation rejects selected segment sets that contain unused extra e
     { segmentId: 1 },
     { segmentId: 2 },
     { segmentId: 3 },
-    { segmentId: 15 },
+    { segmentId: 14 },
   ];
 
   assert.deepEqual(apiInternals.validateRoute(routeWithExtraSegment, game, network), {
     valid: false,
     reason: "The selected segments cannot form a valid route.",
   });
+});
+
+test("execution creates ordered steps from a valid route", () => {
+  const route = [
+    { segmentId: 1, fromStationId: 1, toStationId: 2 },
+    { segmentId: 2, fromStationId: 2, toStationId: 3 },
+  ];
+  const events = [{ id: 1, description: "Bonus", effect: 2 }];
+
+  assert.deepEqual(apiInternals.runExecution(route, events), [
+    {
+      order: 1,
+      segmentId: 1,
+      fromStationId: 1,
+      toStationId: 2,
+      event: events[0],
+      coins: 22,
+    },
+    {
+      order: 2,
+      segmentId: 2,
+      fromStationId: 2,
+      toStationId: 3,
+      event: events[0],
+      coins: 24,
+    },
+  ]);
 });

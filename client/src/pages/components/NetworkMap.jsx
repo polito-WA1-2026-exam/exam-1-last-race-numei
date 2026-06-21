@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Box, Chip, Paper, Stack } from "@mui/material";
 import { throttle } from "../util.js";
 
@@ -16,6 +16,8 @@ const mapHeight = 430;
 const stationLabelOffset = 26;
 
 const getLineColor = (lineId) => lineColors[(lineId - 1) % lineColors.length];
+const isNarrowViewport = () =>
+  typeof globalThis.innerWidth === "number" && globalThis.innerWidth < 640;
 
 export function NetworkMap({
   currentStationId,
@@ -28,17 +30,19 @@ export function NetworkMap({
   startStationId,
   stations = [],
 }) {
-  const [isNarrowViewport, setIsNarrowViewport] = useState(
-    () => globalThis.innerWidth < 640,
+  const [narrowViewport, setNarrowViewport] = useState(isNarrowViewport);
+  const stationById = useMemo(
+    () => new Map(stations.map((station) => [station.id, station])),
+    [stations],
   );
-  const stationById = new Map(stations.map((station) => [station.id, station]));
-  const selectedSegmentIds = new Set(
-    selectedRoute.map((step) => step.segmentId),
+  const selectedSegmentIds = useMemo(
+    () => new Set(selectedRoute.map((step) => step.segmentId)),
+    [selectedRoute],
   );
 
   useEffect(() => {
     const updateViewport = throttle(() => {
-      setIsNarrowViewport(globalThis.innerWidth < 640);
+      setNarrowViewport(isNarrowViewport());
     }, 150);
 
     globalThis.addEventListener("resize", updateViewport);
@@ -117,7 +121,7 @@ export function NetworkMap({
                   />
                   <text
                     fill="#172033"
-                    fontSize={isNarrowViewport ? "11" : "12"}
+                    fontSize={narrowViewport ? "11" : "12"}
                     fontWeight="700"
                     textAnchor="middle"
                     x={station.x}

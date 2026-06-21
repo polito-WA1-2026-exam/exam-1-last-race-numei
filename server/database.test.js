@@ -1,5 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
+import { execFileSync } from "node:child_process";
 import {
   getDatabaseSummary,
   getNetwork,
@@ -8,6 +9,7 @@ import {
 } from "./dao.js";
 
 test("seed database satisfies the exam requirements", async () => {
+  execFileSync("node", ["init-db.js"], { cwd: import.meta.dirname });
   const summary = await getDatabaseSummary();
 
   assert.ok(summary.lines >= 4);
@@ -20,13 +22,22 @@ test("seed database satisfies the exam requirements", async () => {
 });
 
 test("network exposes stations, lines, and selectable segments", async () => {
+  execFileSync("node", ["init-db.js"], { cwd: import.meta.dirname });
   const network = await getNetwork();
 
   assert.equal(network.stations.length, 12);
   assert.equal(network.lines.length, 4);
   assert.ok(network.segments.length >= 12);
-  assert.ok(network.stations.every((station) => Number.isInteger(station.x)));
-  assert.ok(network.stations.every((station) => Number.isInteger(station.y)));
+  assert.ok(network.stations.every((station) => station.x === undefined));
+  assert.ok(network.stations.every((station) => station.y === undefined));
+  assert.equal(
+    new Set(
+      network.segments.map((segment) =>
+        [segment.stationAId, segment.stationBId].sort((a, b) => a - b).join("-"),
+      ),
+    ).size,
+    network.segments.length,
+  );
 });
 
 test("users use salted password hashes compatible with Passport login", async () => {

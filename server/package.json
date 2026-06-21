@@ -6,9 +6,12 @@
   "author": "",
   "type": "module",
   "main": "index.js",
+  "engines": {
+    "node": ">=24 <25"
+  },
   "scripts": {
     "init-db": "node init-db.js",
-    "test": "node --test database.test.js api.test.js",
+    "test": "node --test --test-concurrency=1 database.test.js api.test.js",
     "dev": "nodemon index.js"
   },
   "dependencies": {

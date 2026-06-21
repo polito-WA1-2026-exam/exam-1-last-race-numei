@@ -1,9 +1,12 @@
+import {
+  applyEndpointLayout,
+  applyNetworkLayout,
+} from './stationLayoutAdapter.js'
+
 const transformStationDTOtoVO = (stationDto) => ({
   id: stationDto.id,
   name: stationDto.name,
   isInterchange: Boolean(stationDto.isInterchange),
-  x: stationDto.x,
-  y: stationDto.y,
 })
 
 const transformLineDTOtoVO = (lineDto) => ({
@@ -22,11 +25,11 @@ const transformSegmentDTOtoVO = (segmentDto) => ({
 })
 
 export function transformNetworkDTOtoVO(networkDto = {}) {
-  return {
+  return applyNetworkLayout({
     stations: (networkDto.stations ?? []).map(transformStationDTOtoVO),
     lines: (networkDto.lines ?? []).map(transformLineDTOtoVO),
     segments: (networkDto.segments ?? []).map(transformSegmentDTOtoVO),
-  }
+  })
 }
 
 export function transformGameDTOtoVO(gameDto) {
@@ -37,8 +40,14 @@ export function transformGameDTOtoVO(gameDto) {
     initialCoins: gameDto.initialCoins,
     planningSeconds: gameDto.planningSeconds,
     planningDeadline: gameDto.planningDeadline,
-    startStation: transformStationDTOtoVO(gameDto.startStation),
-    destinationStation: transformStationDTOtoVO(gameDto.destinationStation),
+    startStation: applyEndpointLayout(
+      transformStationDTOtoVO(gameDto.startStation),
+      planningNetwork.stations,
+    ),
+    destinationStation: applyEndpointLayout(
+      transformStationDTOtoVO(gameDto.destinationStation),
+      planningNetwork.stations,
+    ),
     stations: planningNetwork.stations,
     segments: planningNetwork.segments,
   }

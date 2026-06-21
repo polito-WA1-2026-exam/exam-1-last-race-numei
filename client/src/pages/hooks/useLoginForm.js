@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router'
 import { debounce } from '../util.js'
 import { useAuth } from './useAuth.js'
@@ -33,6 +33,8 @@ export function useLoginForm() {
       }, 250),
     [login, navigate, returnPath],
   )
+
+  useEffect(() => () => submitLogin.cancel(), [submitLogin])
 
   const handleSubmit = (event) => {
     event.preventDefault()
