@@ -2,7 +2,7 @@ import { Navigate } from "react-router";
 import { Alert, Box, Button, CircularProgress, TextField } from "@mui/material";
 import LoginOutlinedIcon from "@mui/icons-material/LoginOutlined";
 import { PagePanel } from "./components/PagePanel.jsx";
-import { useAuth } from "./hooks/useAuth.js";
+import { useAuth } from "../hooks/useAuth.js";
 import { useLoginForm } from "./hooks/useLoginForm.js";
 
 export function LoginPage() {

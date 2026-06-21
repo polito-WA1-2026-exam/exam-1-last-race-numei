@@ -1,12 +1,23 @@
-import { Alert, Box, Button, Chip, Stack, Typography } from '@mui/material'
+import {
+  Alert,
+  Box,
+  Button,
+  Chip,
+  IconButton,
+  Stack,
+  Tooltip,
+  Typography,
+} from '@mui/material'
 import BackspaceOutlinedIcon from '@mui/icons-material/BackspaceOutlined'
 import DeleteSweepOutlinedIcon from '@mui/icons-material/DeleteSweepOutlined'
+import DeleteOutlineOutlinedIcon from '@mui/icons-material/DeleteOutlineOutlined'
 
 export function RouteSummary({
   canEdit = true,
   destinationStation,
   onClear,
   onRemoveLast,
+  onRemoveSegment,
   routeSteps = [],
   startStation,
 }) {
@@ -27,18 +38,34 @@ export function RouteSummary({
             <Box
               key={`${step.order}-${step.segmentId}`}
               sx={{
+                alignItems: 'center',
                 border: 1,
                 borderColor: 'divider',
                 borderRadius: 2,
+                display: 'flex',
+                gap: 1,
+                justifyContent: 'space-between',
                 px: 1.5,
                 py: 1,
               }}
             >
               <Typography sx={{ fontWeight: 700 }} variant="body2">
-                {step.order}. {step.fromStation?.name}
-                {' -> '}
-                {step.toStation?.name}
+                {step.order}. {step.segment?.stationAName} - {step.segment?.stationBName}
               </Typography>
+              {canEdit && (
+                <Tooltip title="Remove segment">
+                  <span>
+                    <IconButton
+                      aria-label={`Remove ${step.segment?.stationAName} - ${step.segment?.stationBName}`}
+                      color="error"
+                      onClick={() => onRemoveSegment(step.segmentId)}
+                      size="small"
+                    >
+                      <DeleteOutlineOutlinedIcon fontSize="small" />
+                    </IconButton>
+                  </span>
+                </Tooltip>
+              )}
             </Box>
           ))}
         </Stack>

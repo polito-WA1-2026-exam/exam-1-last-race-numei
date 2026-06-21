@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { Box, Chip, Paper, Stack } from "@mui/material";
-import { throttle } from "../util.js";
+import { throttle } from "../utils/util.js";
 
 const lineColors = [
   "#c23b3b",
@@ -23,6 +23,7 @@ export function NetworkMap({
   currentStationId,
   destinationStationId,
   lines = [],
+  scrollable = true,
   segments = [],
   selectedRoute = [],
   showLineNames = true,
@@ -51,8 +52,14 @@ export function NetworkMap({
 
   return (
     <Paper variant="outlined" sx={{ borderRadius: 2, overflow: "hidden" }}>
-      <Box sx={{ bgcolor: "#f8fafc", overflowX: "auto", p: 2 }}>
-        <Box sx={{ minWidth: mapWidth }}>
+      <Box
+        sx={{
+          bgcolor: "#f8fafc",
+          overflowX: scrollable ? "auto" : "hidden",
+          p: 2,
+        }}
+      >
+        <Box sx={{ minWidth: scrollable ? mapWidth : 0 }}>
           <svg
             aria-label={
               showSegments

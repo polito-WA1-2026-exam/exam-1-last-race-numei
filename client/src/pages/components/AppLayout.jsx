@@ -1,5 +1,5 @@
-import { useMemo, useState } from 'react'
-import { Link as RouterLink, Outlet, useNavigate } from 'react-router'
+import { useMemo, useState } from "react";
+import { Link as RouterLink, Outlet, useNavigate } from "react-router";
 import {
   AppBar,
   Box,
@@ -10,37 +10,37 @@ import {
   Stack,
   Toolbar,
   Typography,
-} from '@mui/material'
-import AccountTreeOutlinedIcon from '@mui/icons-material/AccountTreeOutlined'
-import EmojiEventsOutlinedIcon from '@mui/icons-material/EmojiEventsOutlined'
-import LoginOutlinedIcon from '@mui/icons-material/LoginOutlined'
-import LogoutOutlinedIcon from '@mui/icons-material/LogoutOutlined'
-import MapOutlinedIcon from '@mui/icons-material/MapOutlined'
-import { useAuth } from '../hooks/useAuth.js'
-import { throttle } from '../util.js'
+} from "@mui/material";
+import AccountTreeOutlinedIcon from "@mui/icons-material/AccountTreeOutlined";
+import EmojiEventsOutlinedIcon from "@mui/icons-material/EmojiEventsOutlined";
+import LoginOutlinedIcon from "@mui/icons-material/LoginOutlined";
+import LogoutOutlinedIcon from "@mui/icons-material/LogoutOutlined";
+import MapOutlinedIcon from "@mui/icons-material/MapOutlined";
+import { useAuth } from "../../hooks/useAuth.js";
+import { throttle } from "../utils/util.js";
 
 export function AppLayout() {
-  const { user, logout } = useAuth()
-  const navigate = useNavigate()
-  const [loggingOut, setLoggingOut] = useState(false)
+  const { user, logout } = useAuth();
+  const navigate = useNavigate();
+  const [loggingOut, setLoggingOut] = useState(false);
 
   const handleLogout = useMemo(
     () =>
       throttle(async () => {
-        if (loggingOut) return
-        setLoggingOut(true)
+        if (loggingOut) return;
+        setLoggingOut(true);
 
         try {
-          await logout()
+          await logout();
         } catch {
           // Keep the UI usable even if the API server is unavailable.
         } finally {
-          setLoggingOut(false)
-          navigate('/')
+          setLoggingOut(false);
+          navigate("/");
         }
       }, 1000),
     [loggingOut, logout, navigate],
-  )
+  );
 
   return (
     <Box className="app-shell">
@@ -48,14 +48,22 @@ export function AppLayout() {
         <Toolbar
           sx={{
             borderBottom: 1,
-            borderColor: 'divider',
+            borderColor: "divider",
             gap: 2,
             minHeight: { xs: 64, sm: 72 },
           }}
         >
           <BrandLink user={user} />
-          <DesktopNavigation loggingOut={loggingOut} user={user} onLogout={handleLogout} />
-          <MobileNavigation loggingOut={loggingOut} user={user} onLogout={handleLogout} />
+          <DesktopNavigation
+            loggingOut={loggingOut}
+            user={user}
+            onLogout={handleLogout}
+          />
+          <MobileNavigation
+            loggingOut={loggingOut}
+            user={user}
+            onLogout={handleLogout}
+          />
         </Toolbar>
       </AppBar>
 
@@ -65,7 +73,7 @@ export function AppLayout() {
         </Container>
       </Box>
     </Box>
-  )
+  );
 }
 
 function BrandLink({ user }) {
@@ -75,23 +83,23 @@ function BrandLink({ user }) {
       direction="row"
       spacing={1.25}
       sx={{
-        alignItems: 'center',
-        color: 'text.primary',
+        alignItems: "center",
+        color: "text.primary",
         flexGrow: 1,
         minWidth: 0,
-        textDecoration: 'none',
+        textDecoration: "none",
       }}
-      to={user ? '/setup' : '/'}
+      to={user ? "/setup" : "/"}
     >
       <Box
         sx={{
-          alignItems: 'center',
-          bgcolor: 'primary.main',
+          alignItems: "center",
+          bgcolor: "primary.main",
           borderRadius: 1.5,
-          color: 'primary.contrastText',
-          display: 'inline-flex',
+          color: "primary.contrastText",
+          display: "inline-flex",
           height: 38,
-          justifyContent: 'center',
+          justifyContent: "center",
           width: 38,
         }}
       >
@@ -106,7 +114,7 @@ function BrandLink({ user }) {
         </Typography>
       </Box>
     </Stack>
-  )
+  );
 }
 
 function DesktopNavigation({ loggingOut, user, onLogout }) {
@@ -115,7 +123,7 @@ function DesktopNavigation({ loggingOut, user, onLogout }) {
       component="nav"
       direction="row"
       spacing={1}
-      sx={{ display: { xs: 'none', sm: 'flex' } }}
+      sx={{ display: { xs: "none", sm: "flex" } }}
     >
       {user ? (
         <>
@@ -142,34 +150,64 @@ function DesktopNavigation({ loggingOut, user, onLogout }) {
           </Button>
         </>
       ) : (
-        <Button component={RouterLink} startIcon={<LoginOutlinedIcon />} to="/login" variant="contained">
+        <Button
+          component={RouterLink}
+          startIcon={<LoginOutlinedIcon />}
+          to="/login"
+          variant="contained"
+        >
           Login
         </Button>
       )}
     </Stack>
-  )
+  );
 }
 
 function MobileNavigation({ loggingOut, user, onLogout }) {
   return (
-    <Stack direction="row" spacing={0.5} sx={{ display: { xs: 'flex', sm: 'none' } }}>
+    <Stack
+      direction="row"
+      spacing={0.5}
+      sx={{ display: { xs: "flex", sm: "none" } }}
+    >
       {user ? (
         <>
-          <IconButton aria-label="Go to setup" component={RouterLink} to="/setup">
+          <IconButton
+            aria-label="Go to setup"
+            component={RouterLink}
+            to="/setup"
+          >
             <MapOutlinedIcon />
           </IconButton>
-          <IconButton aria-label="Go to ranking" component={RouterLink} to="/ranking">
+          <IconButton
+            aria-label="Go to ranking"
+            component={RouterLink}
+            to="/ranking"
+          >
             <EmojiEventsOutlinedIcon />
           </IconButton>
-          <IconButton aria-label="Logout" disabled={loggingOut} onClick={onLogout}>
-            {loggingOut ? <CircularProgress color="inherit" size={20} /> : <LogoutOutlinedIcon />}
+          <IconButton
+            aria-label="Logout"
+            disabled={loggingOut}
+            onClick={onLogout}
+          >
+            {loggingOut ? (
+              <CircularProgress color="inherit" size={20} />
+            ) : (
+              <LogoutOutlinedIcon />
+            )}
           </IconButton>
         </>
       ) : (
-        <IconButton aria-label="Login" color="primary" component={RouterLink} to="/login">
+        <IconButton
+          aria-label="Login"
+          color="primary"
+          component={RouterLink}
+          to="/login"
+        >
           <LoginOutlinedIcon />
         </IconButton>
       )}
     </Stack>
-  )
+  );
 }

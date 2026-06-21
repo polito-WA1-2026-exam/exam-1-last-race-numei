@@ -17,7 +17,7 @@ import TimerOutlinedIcon from "@mui/icons-material/TimerOutlined";
 import { Link as RouterLink } from "react-router";
 import { InfoTile } from "./components/InfoTile.jsx";
 import { PagePanel } from "./components/PagePanel.jsx";
-import { useAuth } from "./hooks/useAuth.js";
+import { useAuth } from "../hooks/useAuth.js";
 
 const instructionItems = [
   "Setup: logged-in players can inspect the complete underground network with stations, lines, and connections.",

@@ -38,3 +38,6 @@ export const selectRouteSegment = (route, startStationId, segment) => {
     error: '',
   }
 }
+
+export const removeRouteSegment = (route, segmentId) =>
+  route.filter((step) => step.segmentId !== segmentId)

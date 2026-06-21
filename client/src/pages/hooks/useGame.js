@@ -15,6 +15,7 @@ import {
 } from "../adapters/gameAdapter.js";
 import {
   getRouteEndStationId,
+  removeRouteSegment,
   selectRouteSegment,
 } from "../utils/routeSelection.js";
 
@@ -125,6 +126,11 @@ export function GameProvider({ children }) {
     setSelectedRoute((currentRoute) => currentRoute.slice(0, -1));
   }, []);
 
+  const removeSegment = useCallback((segmentId) => {
+    setRouteError("");
+    setSelectedRoute((currentRoute) => removeRouteSegment(currentRoute, segmentId));
+  }, []);
+
   const clearRoute = useCallback(() => {
     setRouteError("");
     setSelectedRoute([]);
@@ -191,6 +197,7 @@ export function GameProvider({ children }) {
       ranking,
       rankingStatus,
       removeLastSegment,
+      removeSegment,
       restoreGame,
       routeError,
       routeSteps,
@@ -215,6 +222,7 @@ export function GameProvider({ children }) {
       ranking,
       rankingStatus,
       removeLastSegment,
+      removeSegment,
       restoreGame,
       routeError,
       routeSteps,

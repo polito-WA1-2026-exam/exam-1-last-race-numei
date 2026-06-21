@@ -24,7 +24,7 @@ import { StatusPanel } from "./components/StatusPanel.jsx";
 import { useCountdown } from "./hooks/useCountdown.js";
 import { useGame } from "./hooks/useGame.js";
 import { shuffleStationPositions } from "./utils/stationLayout.js";
-import { debounce } from "./util.js";
+import { debounce } from "./utils/util.js";
 
 export function PlanningPage() {
   const { gameId } = useParams();
@@ -37,6 +37,7 @@ export function PlanningPage() {
     currentGame,
     gameStatus,
     removeLastSegment,
+    removeSegment,
     restoreGame,
     routeError,
     routeSteps,
@@ -182,6 +183,7 @@ export function PlanningPage() {
         >
           <NetworkMap
             destinationStationId={currentGame.destinationStation.id}
+            scrollable={false}
             selectedRoute={routeSteps}
             showSegments={false}
             startStationId={currentGame.startStation.id}
@@ -191,6 +193,7 @@ export function PlanningPage() {
             destinationStation={currentGame.destinationStation}
             onClear={clearRoute}
             onRemoveLast={removeLastSegment}
+            onRemoveSegment={removeSegment}
             routeSteps={routeSteps}
             startStation={currentGame.startStation}
           />
