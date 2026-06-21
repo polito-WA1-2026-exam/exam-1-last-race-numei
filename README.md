@@ -31,8 +31,8 @@
   - Request body: none. Protected endpoint.
   - Response: a new game with `gameId`, randomly assigned `startStation`, `destinationStation`, planning deadline, stations, and selectable segments. The destination is at least 3 segments away from the start.
 - POST `/api/games/:gameId/submit`
-  - Request body: `{ route: [{ segmentId, fromStationId, toStationId }] }`. Protected endpoint.
-  - Response: route validity, execution steps with random events and coin totals, and final score. Invalid or incomplete routes return score `0`.
+  - Request body: `{ route: [{ segmentId }] }`. Protected endpoint.
+  - Response: route validity, execution steps with random events and coin totals, and final score. The server rebuilds the submitted segment set into an ordered route from the assigned start to destination. Invalid or incomplete routes return score `0`.
 - GET `/api/games/:gameId/result`
   - Request body: none. Protected endpoint.
   - Response: final result of one game owned by the logged-in user.

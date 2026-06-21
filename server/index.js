@@ -141,14 +141,87 @@ const getSegmentMap = (network) =>
 const getStationMap = (network) =>
   new Map(network.stations.map((station) => [station.id, station]));
 
-const routeStepMatchesSegment = (step, segment) => {
-  const forward =
-    step.fromStationId === segment.stationAId &&
-    step.toStationId === segment.stationBId;
-  const backward =
-    step.fromStationId === segment.stationBId &&
-    step.toStationId === segment.stationAId;
-  return forward || backward;
+const buildSelectedAdjacency = (segments) => {
+  const adjacency = new Map();
+
+  for (const segment of segments) {
+    const addEdge = (stationId, otherStationId) => {
+      if (!adjacency.has(stationId)) adjacency.set(stationId, []);
+      adjacency.get(stationId).push({
+        segment,
+        otherStationId,
+      });
+    };
+
+    addEdge(segment.stationAId, segment.stationBId);
+    addEdge(segment.stationBId, segment.stationAId);
+  }
+
+  return adjacency;
+};
+
+const findValidOrderedRoute = (segments, game, stationMap) => {
+  const adjacency = buildSelectedAdjacency(segments);
+  const targetSegmentCount = segments.length;
+  let blockedByLineChange = false;
+
+  const search = ({
+    currentStationId,
+    orderedRoute,
+    previousLineId,
+    usedSegmentIds,
+  }) => {
+    if (usedSegmentIds.size === targetSegmentCount) {
+      return currentStationId === game.destinationStation.id
+        ? orderedRoute
+        : undefined;
+    }
+
+    for (const edge of adjacency.get(currentStationId) ?? []) {
+      const { segment, otherStationId } = edge;
+      if (usedSegmentIds.has(segment.id)) continue;
+
+      if (
+        previousLineId &&
+        previousLineId !== segment.lineId &&
+        !stationMap.get(currentStationId)?.isInterchange
+      ) {
+        blockedByLineChange = true;
+        continue;
+      }
+
+      const nextUsedSegmentIds = new Set(usedSegmentIds);
+      nextUsedSegmentIds.add(segment.id);
+
+      const result = search({
+        currentStationId: otherStationId,
+        orderedRoute: [
+          ...orderedRoute,
+          {
+            segmentId: segment.id,
+            fromStationId: currentStationId,
+            toStationId: otherStationId,
+          },
+        ],
+        previousLineId: segment.lineId,
+        usedSegmentIds: nextUsedSegmentIds,
+      });
+
+      if (result) return result;
+    }
+
+    return undefined;
+  };
+
+  return {
+    blockedByLineChange,
+    orderedRoute: search({
+      currentStationId: game.startStation.id,
+      orderedRoute: [],
+      previousLineId: undefined,
+      usedSegmentIds: new Set(),
+    }),
+  };
 };
 
 const validateRoute = (route, game, network) => {
@@ -159,8 +232,7 @@ const validateRoute = (route, game, network) => {
   const segmentMap = getSegmentMap(network);
   const stationMap = getStationMap(network);
   const usedSegments = new Set();
-  let currentStationId = game.startStation.id;
-  let previousSegment;
+  const selectedSegments = [];
 
   for (const step of route) {
     const segment = segmentMap.get(step.segmentId);
@@ -168,37 +240,26 @@ const validateRoute = (route, game, network) => {
       return { valid: false, reason: "The route contains an unknown segment." };
     if (usedSegments.has(step.segmentId))
       return { valid: false, reason: "A segment is used more than once." };
-    if (step.fromStationId !== currentStationId)
-      return { valid: false, reason: "The route is not continuous." };
-    if (!routeStepMatchesSegment(step, segment))
-      return {
-        valid: false,
-        reason: "A selected segment does not connect the selected stations.",
-      };
-    if (
-      previousSegment &&
-      previousSegment.lineId !== segment.lineId &&
-      !stationMap.get(currentStationId)?.isInterchange
-    ) {
-      return {
-        valid: false,
-        reason: "Line changes are allowed only at interchange stations.",
-      };
-    }
 
     usedSegments.add(step.segmentId);
-    previousSegment = segment;
-    currentStationId = step.toStationId;
+    selectedSegments.push(segment);
   }
 
-  if (currentStationId !== game.destinationStation.id) {
+  const { blockedByLineChange, orderedRoute } = findValidOrderedRoute(
+    selectedSegments,
+    game,
+    stationMap,
+  );
+  if (!orderedRoute) {
     return {
       valid: false,
-      reason: "The route does not reach the assigned destination.",
+      reason: blockedByLineChange
+        ? "Line changes are allowed only at interchange stations."
+        : "The selected segments cannot form a valid route.",
     };
   }
 
-  return { valid: true };
+  return { valid: true, orderedRoute };
 };
 
 const runExecution = (route, events) => {
@@ -210,6 +271,7 @@ const runExecution = (route, events) => {
     return {
       order: index + 1,
       segmentId: step.segmentId,
+      currentStationId: game.startStation.id,
       fromStationId: step.fromStationId,
       toStationId: step.toStationId,
       event,
@@ -278,8 +340,6 @@ app.post(
   isLoggedIn,
   body("route").isArray(),
   body("route.*.segmentId").isInt({ min: 1 }),
-  body("route.*.fromStationId").isInt({ min: 1 }),
-  body("route.*.toStationId").isInt({ min: 1 }),
   checkValidationErrors,
   async (req, res) => {
     const gameId = Number(req.params.gameId);
@@ -301,7 +361,7 @@ app.post(
       let finalScore = 0;
 
       if (validation.valid) {
-        steps = runExecution(route, await listEvents());
+        steps = runExecution(validation.orderedRoute, await listEvents());
         finalScore = Math.max(0, steps.at(-1)?.coins ?? INITIAL_COINS);
       }
 

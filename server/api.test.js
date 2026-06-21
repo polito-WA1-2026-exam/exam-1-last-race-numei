@@ -51,7 +51,10 @@ test("basic route validation checks endpoints, continuity, known segments, and d
     { segmentId: 3, fromStationId: 3, toStationId: 4 },
   ];
 
-  assert.deepEqual(apiInternals.validateRoute(validRoute, game, network), { valid: true });
+  assert.deepEqual(apiInternals.validateRoute(validRoute, game, network), {
+    valid: true,
+    orderedRoute: validRoute,
+  });
   assert.equal(apiInternals.validateRoute([], game, network).valid, false);
   assert.equal(apiInternals.validateRoute([{ segmentId: 999, fromStationId: 1, toStationId: 2 }], game, network).valid, false);
   assert.equal(apiInternals.validateRoute([validRoute[0], validRoute[0]], game, network).valid, false);
@@ -71,7 +74,10 @@ test("route validation allows line changes only at interchange stations", async 
   ];
   assert.deepEqual(
     apiInternals.validateRoute(interchangeChangeRoute, interchangeChangeGame, network),
-    { valid: true },
+    {
+      valid: true,
+      orderedRoute: interchangeChangeRoute,
+    },
   );
 
   const nonInterchangeChangeGame = {
@@ -89,4 +95,47 @@ test("route validation allows line changes only at interchange stations", async 
       reason: "Line changes are allowed only at interchange stations.",
     },
   );
+});
+
+test("route validation rebuilds a valid ordered route from unordered selected segments", async () => {
+  execFileSync("node", ["init-db.js"], { cwd: import.meta.dirname });
+  const network = await getNetwork();
+  const game = {
+    startStation: { id: 1 },
+    destinationStation: { id: 4 },
+  };
+  const unorderedRoute = [
+    { segmentId: 3, fromStationId: 99, toStationId: 98 },
+    { segmentId: 1, fromStationId: 97, toStationId: 96 },
+    { segmentId: 2, fromStationId: 95, toStationId: 94 },
+  ];
+
+  assert.deepEqual(apiInternals.validateRoute(unorderedRoute, game, network), {
+    valid: true,
+    orderedRoute: [
+      { segmentId: 1, fromStationId: 1, toStationId: 2 },
+      { segmentId: 2, fromStationId: 2, toStationId: 3 },
+      { segmentId: 3, fromStationId: 3, toStationId: 4 },
+    ],
+  });
+});
+
+test("route validation rejects selected segment sets that contain unused extra edges", async () => {
+  execFileSync("node", ["init-db.js"], { cwd: import.meta.dirname });
+  const network = await getNetwork();
+  const game = {
+    startStation: { id: 1 },
+    destinationStation: { id: 4 },
+  };
+  const routeWithExtraSegment = [
+    { segmentId: 1 },
+    { segmentId: 2 },
+    { segmentId: 3 },
+    { segmentId: 15 },
+  ];
+
+  assert.deepEqual(apiInternals.validateRoute(routeWithExtraSegment, game, network), {
+    valid: false,
+    reason: "The selected segments cannot form a valid route.",
+  });
 });
