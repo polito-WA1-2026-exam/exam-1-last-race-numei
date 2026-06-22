@@ -65,10 +65,10 @@
 
 ## Screenshot
 
-![setup](image/README/setup.png)
-![planning](image/README/planning.png)
-![execution](image/README/execution.png)
-![ranking](image/README/ranking.png)
+![setup](img/setup.png)
+![planning](img/planning.png)
+![execution](img/execution.png)
+![ranking](img/ranking.png)
 
 ## Users Credentials
 

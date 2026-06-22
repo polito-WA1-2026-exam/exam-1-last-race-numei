@@ -27,6 +27,7 @@ import {
 
 const port = 3001;
 const clientOrigin = process.env.CLIENT_ORIGIN ?? "http://localhost:5173";
+const AUTO_SUBMIT_GRACE_MS = 5000;
 const activeGames = new Map();
 let nextGameId = 1;
 
@@ -83,6 +84,10 @@ const checkValidationErrors = (req, res, next) => {
     return res.status(422).json({ errors: errors.array() });
   return next();
 };
+
+const isPlanningSubmitWindowClosed = (game) =>
+  Date.now() >
+  new Date(game.planningDeadline).getTime() + AUTO_SUBMIT_GRACE_MS;
 
 app.post("/api/sessions", passport.authenticate("local"), (req, res) => {
   res.status(201).json(req.user);
@@ -155,6 +160,27 @@ app.post(
     if (game.completedResult) return res.json(game.completedResult);
 
     try {
+      if (isPlanningSubmitWindowClosed(game)) {
+        const dbGameId = await createGameResult({
+          userId: req.user.id,
+          startStationId: game.startStation.id,
+          destinationStationId: game.destinationStation.id,
+          score: 0,
+          playAt: new Date().toISOString(),
+        });
+
+        game.completedResult = {
+          gameId,
+          dbGameId,
+          valid: false,
+          reason: "Planning time expired.",
+          steps: [],
+          finalScore: 0,
+        };
+
+        return res.json(game.completedResult);
+      }
+
       const network = await getNetwork();
       const route = req.body.route.map((step) => ({
         segmentId: Number(step.segmentId),

@@ -4,6 +4,29 @@ import { execFileSync } from "node:child_process";
 import { app, apiInternals } from "./index.js";
 import { getNetwork } from "./dao.js";
 
+const withTestServer = async (run) => {
+  const server = app.listen(0);
+  try {
+    const { port } = server.address();
+    await run(`http://127.0.0.1:${port}`);
+  } finally {
+    await new Promise((resolve, reject) =>
+      server.close((err) => (err ? reject(err) : resolve())),
+    );
+  }
+};
+
+const login = async (baseUrl) => {
+  const response = await fetch(`${baseUrl}/api/sessions`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ username: "alice", password: "password" }),
+  });
+
+  assert.equal(response.status, 201);
+  return response.headers.get("set-cookie");
+};
+
 test("all README API routes are registered", () => {
   const routes = app.router.stack
     .filter((layer) => layer.route)
@@ -149,6 +172,99 @@ test("route validation rejects selected segment sets that contain unused extra e
   assert.deepEqual(apiInternals.validateRoute(routeWithExtraSegment, game, network), {
     valid: false,
     reason: "The selected segments cannot form a valid route.",
+  });
+});
+
+test("automatic submit just after the planning deadline validates the current route", async () => {
+  execFileSync("node", ["init-db.js"], { cwd: import.meta.dirname });
+
+  await withTestServer(async (baseUrl) => {
+    const cookie = await login(baseUrl);
+    const originalRandom = Math.random;
+    Math.random = () => 0;
+    const gameResponse = await fetch(`${baseUrl}/api/games`, {
+      method: "POST",
+      headers: { Cookie: cookie },
+    });
+    const game = await gameResponse.json();
+    const originalNow = Date.now;
+
+    Date.now = () => new Date(game.planningDeadline).getTime() + 1000;
+    try {
+      const submitResponse = await fetch(
+        `${baseUrl}/api/games/${game.gameId}/submit`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Cookie: cookie,
+          },
+          body: JSON.stringify({
+            route: [
+              { segmentId: 1 },
+              { segmentId: 2 },
+              { segmentId: 3 },
+            ],
+          }),
+        },
+      );
+      const result = await submitResponse.json();
+
+      assert.equal(submitResponse.status, 200);
+      assert.equal(result.valid, true);
+      assert.equal(result.finalScore, 20);
+      assert.equal(result.steps.length, 3);
+    } finally {
+      Date.now = originalNow;
+      Math.random = originalRandom;
+    }
+  });
+});
+
+test("manual submit long after the planning deadline ends the game with score zero", async () => {
+  execFileSync("node", ["init-db.js"], { cwd: import.meta.dirname });
+
+  await withTestServer(async (baseUrl) => {
+    const cookie = await login(baseUrl);
+    const originalRandom = Math.random;
+    Math.random = () => 0;
+    const gameResponse = await fetch(`${baseUrl}/api/games`, {
+      method: "POST",
+      headers: { Cookie: cookie },
+    });
+    const game = await gameResponse.json();
+    const originalNow = Date.now;
+
+    Date.now = () => new Date(game.planningDeadline).getTime() + 11000;
+    try {
+      const submitResponse = await fetch(
+        `${baseUrl}/api/games/${game.gameId}/submit`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Cookie: cookie,
+          },
+          body: JSON.stringify({
+            route: [
+              { segmentId: 1 },
+              { segmentId: 2 },
+              { segmentId: 3 },
+            ],
+          }),
+        },
+      );
+      const result = await submitResponse.json();
+
+      assert.equal(submitResponse.status, 200);
+      assert.equal(result.valid, false);
+      assert.equal(result.reason, "Planning time expired.");
+      assert.equal(result.finalScore, 0);
+      assert.deepEqual(result.steps, []);
+    } finally {
+      Date.now = originalNow;
+      Math.random = originalRandom;
+    }
   });
 });
 
