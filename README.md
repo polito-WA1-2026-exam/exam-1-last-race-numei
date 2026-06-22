@@ -7,7 +7,7 @@
 - Route `/`: public instructions page. Anonymous visitors can only read the game instructions; logged-in users can move to the setup page.
 - Route `/login`: login form with username and password fields.
 - Route `/setup`: protected page showing the complete underground network map with stations, segments, and line legend; includes controls to start a new game and open the ranking.
-- Route `/games/:gameId/planning`: protected planning page showing a shuffled stations-only map, the assigned start and destination stations, the list of all available segments, the selected route summary, and the 90-second countdown. Each segment can be selected once; route validity is checked by the server after submission.
+- Route `/games/:gameId/planning`: protected planning page showing a shuffled stations-only map, assigned start and destination stations, list of all available segments, selected route summary, and 90-second countdown. Each segment can be selected once; route validity is checked by the server after submission.
 - Route `/games/:gameId/execution`: protected page showing the valid submitted route execution one segment at a time, with the random event and updated coin total for each step. Invalid or incomplete routes skip this phase.
 - Route `/games/:gameId/result`: protected page showing the final score and a control to start another game.
 - Route `/ranking`: protected page showing the best score obtained by each registered user.
@@ -72,9 +72,9 @@
 
 ## Users Credentials
 
-- username: alice, password: password, salt: alice-salt
-- username: bruno, password: password, salt: bruno-salt
-- username: carla, password: password, salt: carla-salt
+- username: alice, password: bB2257894902@, salt: alice-salt
+- username: bruno, password: bB2257894902@, salt: bruno-salt
+- username: carla, password: bB2257894902@, salt: carla-salt
 
 ## Use of AI Tools
 
